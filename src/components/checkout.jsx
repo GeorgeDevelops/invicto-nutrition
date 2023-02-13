@@ -224,7 +224,9 @@ const Checkout = (props) => {
               </ul>
             </div>
             <div className="subtotal">
+              <p>Envio RD$ 300</p>
               <p>Subtotal RD$ {subtotal}</p>
+              <p>Total a pagar RD$ {subtotal + 300}</p>
             </div>
           </div>
           <div className="paymentMethods">
