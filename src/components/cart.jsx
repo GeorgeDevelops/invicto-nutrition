@@ -4,6 +4,8 @@ import CartItem from "./cart-item";
 import store from "../store";
 import { setFormat } from "../utils/useful";
 import { getSubtotal } from "../features/cartSlice";
+import { toast } from "react-toastify";
+import jwtDecode from "jwt-decode";
 
 const Cart = (props) => {
   const navigateTo = useNavigate();
@@ -18,8 +20,21 @@ const Cart = (props) => {
   });
 
   function go_to_checkout() {
+    let AUTH_TOKEN = localStorage.getItem("token");
+
+    if (!AUTH_TOKEN || AUTH_TOKEN === "")
+      return toast.info("Debes iniciar seccion o registrarte");
+
+    let decoded = jwtDecode(AUTH_TOKEN);
+
+    if (!decoded._id || decoded._id === "")
+      return toast.info("Debes iniciar seccion o registrarte");
+
     let products = store.getState().cartReducer.value;
-    if (products.length < 1) return;
+    if (products.length < 1)
+      return toast.info("Debes agregar al menos un articulo al carrito", {
+        position: toast.POSITION.TOP_CENTER,
+      });
     return navigateTo("/checkout");
   }
 

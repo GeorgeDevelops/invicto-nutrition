@@ -12,12 +12,10 @@ import { Spinner } from "react-bootstrap";
 const Shop = (props) => {
   const [filters, setFilters] = useState([]);
   const [range, setRange] = useState(9000);
-  const [content, setContent] = useState([]);
+  const [content, setContent] = useState(null);
   const dispatch = useDispatch();
   const [pageWidth, setPageWidth] = useState(window.innerWidth);
-  const [products, setProducts] = useState(
-    store.getState().productsSlice.value
-  );
+  const [products, setProducts] = useState(null);
 
   store.subscribe(() => {
     setFilters(store.getState().productFilter.value);
@@ -49,6 +47,10 @@ const Shop = (props) => {
   }
 
   function filterByCategory(products) {
+    if (!products) return;
+
+    if (products.length < 1) return;
+
     let matched = [];
     if (filters.length < 1) return filterByPrice(products);
 
@@ -81,7 +83,7 @@ const Shop = (props) => {
 
   useEffect(() => {
     filterByCategory(products);
-  }, [range, filters]);
+  }, [range, filters, products]);
 
   useEffect(() => {
     setFilters(store.getState().productFilter.value);
@@ -206,23 +208,25 @@ const Shop = (props) => {
             </div>
           </aside>
           <div className="cardWrap">
-            {content.length < 1 ? (
-              <>
-                <p>No hay articulos disponibles</p>
-                &nbsp;
-                <Spinner />
-              </>
+            {!content ? (
+              <Spinner />
             ) : (
-              content.map((p) => (
-                <Cards
-                  id={p._id}
-                  key={p._id}
-                  images={p.images}
-                  name={p.name}
-                  weight={p.weight}
-                  brand={p.brand}
-                />
-              ))
+              <React.Fragment>
+                {content.length < 1 ? (
+                  <p>No hay productos disponibles</p>
+                ) : (
+                  content.map((p) => (
+                    <Cards
+                      id={p._id}
+                      key={p._id}
+                      images={p.images}
+                      name={p.name}
+                      weight={p.weight}
+                      brand={p.brand}
+                    />
+                  ))
+                )}
+              </React.Fragment>
             )}
           </div>
         </div>

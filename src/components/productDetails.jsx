@@ -7,12 +7,14 @@ import store from "../store";
 import { add } from "../features/cartSlice";
 import http from "./../services/httpService";
 import { Spinner } from "react-bootstrap";
+import { toast } from "react-toastify";
 
 const ProductDetails = (props) => {
   const [merchant, setMerchant] = useState(null);
   const { productId } = useParams();
   const [index, setIndex] = useState(0);
   const [weight, setWeight] = useState({});
+  const [weights, setWeights] = useState(null);
 
   async function getMerchant(productId) {
     let URL = process.env.REACT_APP_API_URL;
@@ -23,6 +25,10 @@ const ProductDetails = (props) => {
   }
 
   function addToCart() {
+    if (!weights) return;
+
+    if (weights.length < 1) return;
+
     let object = {
       index: Number(index),
       _id: merchant._id,
@@ -33,6 +39,28 @@ const ProductDetails = (props) => {
       quantity: null,
     };
     store.dispatch(add(object));
+    return;
+  }
+
+  function getStock() {
+    if (!merchant) return;
+
+    let ready = [];
+    return new Promise((resolve, reject) => {
+      merchant.weight.forEach((w, idx) => {
+        if (w.quantity > 0) ready.push(w);
+        let index = idx + 1;
+        if (index === merchant.weight.length) resolve(ready);
+      });
+    });
+  }
+
+  async function executeGetStock() {
+    let stock = await getStock().catch((err) =>
+      toast.error(err, { position: toast.POSITION.TOP_CENTER })
+    );
+
+    setWeights(stock);
     return;
   }
 
@@ -53,6 +81,10 @@ const ProductDetails = (props) => {
   useEffect(() => {
     getMerchant(productId);
   }, []);
+
+  useEffect(() => {
+    executeGetStock();
+  }, [merchant]);
 
   return (
     <React.Fragment>
@@ -85,24 +117,32 @@ const ProductDetails = (props) => {
             </div>
             <div>
               <span className="pd-category-title">Tamaños & Sabores</span>
-              <p className="pd-sizeAndFlavors">
-                {merchant.weight.map((m, idx) => (
-                  <span key={idx} id="span-choice">
-                    <input
-                      type="radio"
-                      name="weight"
-                      id={idx}
-                      value={idx}
-                      onChange={(e) => handleCheckboxChange(e)}
-                    />
-                    &nbsp;
-                    <label htmlFor={idx}>
-                      {m.weight}&nbsp;{m.measure}&nbsp;-&nbsp;
-                      <span>{m.flavor}</span>
-                    </label>
-                  </span>
-                ))}
-              </p>
+              {!weights ? (
+                <Spinner />
+              ) : (
+                <p className="pd-sizeAndFlavors">
+                  {weights.length < 1 ? (
+                    <p>Producto no disponible.</p>
+                  ) : (
+                    weights.map((m, idx) => (
+                      <span key={idx} id="span-choice">
+                        <input
+                          type="radio"
+                          name="weight"
+                          id={idx}
+                          value={idx}
+                          onChange={(e) => handleCheckboxChange(e)}
+                        />
+                        &nbsp;
+                        <label htmlFor={idx}>
+                          {m.weight}&nbsp;{m.measure}&nbsp;-&nbsp;
+                          <span>{m.flavor}</span>
+                        </label>
+                      </span>
+                    ))
+                  )}
+                </p>
+              )}
             </div>
             <div>
               <span className="pd-price-title">RD$&nbsp;</span>

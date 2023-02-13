@@ -5,9 +5,12 @@ import store from "../store";
 import http from "../services/httpService";
 import { toast } from "react-toastify";
 import { getLoginUser } from "../features/userSlice";
+import { useNavigate } from "react-router-dom";
+import jwtDecode from "jwt-decode";
 let url = process.env.REACT_APP_API_URL;
 
 const EditProfile = ({ showPopUp }) => {
+  const API = process.env.REACT_APP_API_URL;
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -16,6 +19,7 @@ const EditProfile = ({ showPopUp }) => {
   const [sector, setSector] = useState("");
   const [city, setCity] = useState("");
   const [id, setId] = useState("");
+  const navigate = useNavigate();
 
   async function saveChanges() {
     const data = {
@@ -52,21 +56,35 @@ const EditProfile = ({ showPopUp }) => {
     return;
   }
 
-  function stateUser() {
-    let user = store.getState().userSlice.value;
-    if (!user || !user._id || user._id === "") return;
-    setFirstName(user.first_name);
-    setLastName(user.last_name);
-    setEmail(user.email);
-    setPhone(user.phone);
-    setAddress(user.address.street);
-    setSector(user.address.sector);
-    setCity(user.address.city);
-    setId(user._id);
+  async function getUser() {
+    let AUTH_TOKEN = localStorage.getItem("token");
+
+    if (!AUTH_TOKEN || AUTH_TOKEN === "") return navigate("/iniciar-seccion");
+
+    let decoded = jwtDecode(AUTH_TOKEN);
+
+    if (!decoded._id || decoded._id === "") return navigate("/iniciar-seccion");
+
+    let URL = `${API}/api/users/${decoded._id}`;
+
+    let headers = { headers: { "x-auth-token": AUTH_TOKEN } };
+
+    let response = await http.get(URL, headers);
+
+    if (response.status && response.status === 200) {
+      setFirstName(response.data.first_name);
+      setLastName(response.data.last_name);
+      setEmail(response.data.email);
+      setPhone(response.data.phone);
+      setAddress(response.data.address.street);
+      setSector(response.data.address.sector);
+      setCity(response.data.address.city);
+      setId(response.data._id);
+    }
   }
 
   useEffect(() => {
-    stateUser();
+    getUser();
   }, []);
 
   return !showPopUp[0] ? null : (

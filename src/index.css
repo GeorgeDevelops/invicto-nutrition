@@ -289,13 +289,13 @@ html {
 .productsWrap {
   display: flex;
   gap: 20px;
-  width: 80%;
+  width: 70%;
   height: fit-content;
   padding: 10px;
   margin: 0px auto;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 .ropesShakeBanner {
   display: block;
@@ -412,6 +412,11 @@ footer .copyrights p {
   border-radius: 1px;
   cursor: pointer;
   position: relative;
+  transition: all 300ms ease;
+}
+
+.card:hover {
+  box-shadow: 1px 1px 3px #333;
 }
 
 .card .productName {
@@ -1257,4 +1262,14 @@ cart-button .pd-price {
   flex-direction: column;
   justify-content: space-around;
   margin: 0px auto;
+}
+
+#promotions {
+  padding: 20px 0px;
+}
+
+#apply_btn {
+  background-color: #1f618d;
+  border-color: #1f618d;
+  color: #fff;
 }

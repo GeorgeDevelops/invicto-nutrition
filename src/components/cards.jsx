@@ -7,6 +7,7 @@ import { add } from "../features/cartSlice";
 import { setFormat } from "../utils/useful";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 function Cards({ id, images, weight, name, brand }) {
   const navigateTo = useNavigate();
@@ -19,6 +20,11 @@ function Cards({ id, images, weight, name, brand }) {
   }
 
   function addToCart(e) {
+    if (available < 1)
+      return toast.error("Producto no disponible (Out of stock)", {
+        position: toast.POSITION.TOP_CENTER,
+      });
+
     const _id = e.currentTarget.id;
     let object = {
       index: 0,

@@ -9,18 +9,25 @@ import { useNavigate } from "react-router-dom";
 import { Spinner } from "react-bootstrap";
 import { emptyCart } from "../features/cartSlice";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
+import Button from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
 
 const Checkout = (props) => {
   const [merchants, setMerchants] = useState([]);
   const [user, setUser] = useState(null);
   const [subtotal, setSubtotal] = useState(null);
   const [spinner, setSpinner] = useState(null);
-  const API_URL = process.env.REACT_APP_API_URL;
+  const [applying, setApplying] = useState();
+  const [promoCode, setPromoCode] = useState("");
+  const [promo, setPromo] = useState(null);
+  const API = process.env.REACT_APP_API_URL;
   const navigate = useNavigate();
 
   async function handleNewOrder(data, payment_details) {
-    let url = `${API_URL}/api/orders/new`;
-    let emailUrl = `${API_URL}/api/thank-you-for-your-purchase`;
+    let url = `${API}/api/orders/new`;
+    let emailUrl = `${API}/api/thank-you-for-your-purchase`;
     let cart = [];
     setSpinner(true);
     let user = store.getState().userSlice.value;
@@ -72,7 +79,7 @@ const Checkout = (props) => {
 
   async function createOrder(data) {
     return new Promise(async (resolve, reject) => {
-      let url = `${API_URL}/api/paypal/create-order`;
+      let url = `${API}/api/paypal/create-order`;
       let cart = [];
 
       function calculateData() {
@@ -101,7 +108,7 @@ const Checkout = (props) => {
   }
 
   async function capturePayment(orderId) {
-    let url = `${API_URL}/api/paypal/capture-payment`;
+    let url = `${API}/api/paypal/capture-payment`;
     let token = localStorage.getItem("token");
 
     let details = { orderId: orderId };
@@ -119,8 +126,62 @@ const Checkout = (props) => {
     }
   }
 
+  async function getUser() {
+    let AUTH_TOKEN = localStorage.getItem("token");
+
+    if (!AUTH_TOKEN || AUTH_TOKEN === "") return navigate("/iniciar-seccion");
+
+    let decoded = jwtDecode(AUTH_TOKEN);
+
+    if (!decoded._id || decoded._id === "") return navigate("/iniciar-seccion");
+
+    let URL = `${API}/api/users/${decoded._id}`;
+
+    let headers = { headers: { "x-auth-token": AUTH_TOKEN } };
+
+    let response = await http.get(URL, headers);
+
+    if (response.status && response.status === 200) {
+      setUser(response.data);
+    }
+  }
+
+  async function handlePromotionApplication() {
+    setApplying(true);
+
+    let URL = `${API}/api/promotions/${promoCode}`;
+
+    let AUTH_TOKEN = localStorage.getItem("token");
+
+    if (!AUTH_TOKEN || AUTH_TOKEN === "") {
+      toast.info("Intentelo nuevamente.");
+      setApplying(null);
+      return;
+    }
+
+    let headers = { headers: { "x-auth-token": AUTH_TOKEN } };
+
+    let response = await http.get(URL, headers);
+
+    if (response.status && response.status === 200) {
+      setApplying(null);
+
+      setPromo(response.data.promotion);
+
+      toast.success(response.data.message, {
+        position: toast.POSITION.TOP_CENTER,
+      });
+
+      setPromoCode("");
+      return;
+    }
+
+    setPromoCode("");
+    setApplying(null);
+    return;
+  }
+
   store.subscribe(() => {
-    setUser(store.getState().userSlice.value);
     setMerchants(store.getState().cartReducer.value);
     setSubtotal(store.getState().cartReducer.subtotal);
   });
@@ -131,7 +192,7 @@ const Checkout = (props) => {
   }, []);
 
   useEffect(() => {
-    setUser(store.getState().userSlice.value);
+    getUser();
     setMerchants(store.getState().cartReducer.value);
     setSubtotal(store.getState().cartReducer.subtotal);
   }, []);
@@ -185,6 +246,25 @@ const Checkout = (props) => {
                   <li>{user.address.city}</li>
                 </ul>
               )}
+            </div>
+            <div id="promotions">
+              <Form>
+                <Row>
+                  <Col>
+                    <Form.Control
+                      placeholder="Codigo de promocion"
+                      type="text"
+                      onChange={(e) => setPromoCode(e.currentTarget.value)}
+                      value={promoCode}
+                    />
+                  </Col>
+                  <Col>
+                    <Button id="apply_btn" onClick={handlePromotionApplication}>
+                      {applying ? <Spinner /> : "Aplicar"}
+                    </Button>
+                  </Col>
+                </Row>
+              </Form>
             </div>
             <div className="payment-methods">
               <PayPalScriptProvider

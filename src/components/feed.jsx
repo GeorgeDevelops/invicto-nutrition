@@ -1,22 +1,27 @@
 import React, { useEffect, useState } from "react";
 import Welcome from "./welcome.jsx";
 import Cards from "./cards.jsx";
-import store from "../store.js";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "react-bootstrap";
+import http from "../services/httpService.js";
 
 const Feed = (props) => {
+  const URL = process.env.REACT_APP_API_URL;
   const navigate = useNavigate();
-  const [products, setProducts] = useState(
-    store.getState().productsSlice.value
-  );
+  const [products, setProducts] = useState(null);
 
-  store.subscribe(() => {
-    setProducts(store.getState().productsSlice.value);
-  });
+  async function getProducts() {
+    let url = `${URL}/api/products`;
+
+    let response = await http.get(url);
+
+    if (response.status && response.status === 200) {
+      setProducts(response.data);
+    }
+  }
 
   useEffect(() => {
-    setProducts(store.getState().productsSlice.value);
+    getProducts();
   }, []);
 
   return (
@@ -27,22 +32,26 @@ const Feed = (props) => {
       <div className="ourProductsBanner">
         <h2>nuestros productos</h2>
       </div>
-      <div className="productsWrap">
-        {products.length < 1 ? (
-          <Spinner />
-        ) : (
-          products.map((product) => (
-            <Cards
-              id={product._id}
-              key={product._id}
-              images={product.images}
-              name={product.name}
-              weight={product.weight}
-              brand={product.brand}
-            />
-          ))
-        )}
-      </div>
+      {!products ? (
+        <Spinner className="m-auto" />
+      ) : (
+        <div className="productsWrap">
+          {products.length < 1 ? (
+            <p>No hay productos disponibles</p>
+          ) : (
+            products.map((product) => (
+              <Cards
+                id={product._id}
+                key={product._id}
+                images={product.images}
+                name={product.name}
+                weight={product.weight}
+                brand={product.brand}
+              />
+            ))
+          )}
+        </div>
+      )}
       <div className="ropesShakeBanner">
         <div className="ropesShakeContent">
           <h2>Invicto Nutrition</h2>

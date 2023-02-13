@@ -16,7 +16,7 @@ export default function Navegation() {
   const [isSearching, setIsSearching] = useState(false);
   const navigateTo = useNavigate();
   const [cart, setCart] = useState([]);
-  const [user, setUser] = useState(store.getState().userSlice.value);
+  const [user, setUser] = useState(null);
   const [search, setSearch] = useState("");
   const [searchResultPreview, setSearchResultPreview] = useState([]);
 
@@ -49,6 +49,20 @@ export default function Navegation() {
   store.subscribe(() => {
     setCart(store.getState().cartReducer.value);
   });
+
+  useEffect(() => {
+    let AUTH_TOKEN = localStorage.getItem("token");
+
+    if (!AUTH_TOKEN || AUTH_TOKEN === "") return;
+
+    let decoded = jwtDecode(AUTH_TOKEN);
+
+    if (!decoded._id || decoded._id === "") return;
+
+    if (!decoded.firstName || decoded.firstName === "") return;
+
+    setUser(decoded);
+  }, []);
 
   useEffect(() => {
     let AUTH_TOKEN = localStorage.getItem("token");
@@ -142,7 +156,7 @@ export default function Navegation() {
                   icon="fa-solid fa-user"
                 />
                 &nbsp;
-                {user.firstName && `${user.firstName}`}
+                {user && `${user.firstName}`}
               </Nav.Link>
               <Nav.Link eventKey={2}>
                 <FontAwesomeIcon
