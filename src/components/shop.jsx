@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useDispatch } from "react-redux";
 import { addFilter, removeFilter } from "../features/productFilterSlice";
 import store from "../store";
-import Cards from "./cards";
+import Card from "./card";
 import OffCanvasFilter from "./offcanvas-filter";
 import { setFormat } from "../utils/useful";
 import http from "../services/httpService";
@@ -128,7 +128,7 @@ const Shop = (props) => {
               ))}
         </div>
         <div className="contentWrap">
-          {pageWidth <= 815 && <OffCanvasFilter />}
+          {pageWidth <= 885 && <OffCanvasFilter />}
           <aside id="sidebar">
             <div className="priceFilter">
               <label htmlFor="price_range">Filtrar por precio</label>
@@ -216,7 +216,7 @@ const Shop = (props) => {
                   <p>No hay productos disponibles</p>
                 ) : (
                   content.map((p) => (
-                    <Cards
+                    <Card
                       id={p._id}
                       key={p._id}
                       images={p.images}

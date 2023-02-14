@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Welcome from "./welcome.jsx";
-import Cards from "./cards.jsx";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "react-bootstrap";
 import http from "../services/httpService.js";
+import Card from "./card.jsx";
 
 const Feed = (props) => {
   const URL = process.env.REACT_APP_API_URL;
@@ -32,26 +32,28 @@ const Feed = (props) => {
       <div className="ourProductsBanner">
         <h2>nuestros productos</h2>
       </div>
-      {!products ? (
-        <Spinner className="m-auto" />
-      ) : (
-        <div className="productsWrap">
-          {products.length < 1 ? (
-            <p>No hay productos disponibles</p>
-          ) : (
-            products.map((product) => (
-              <Cards
-                id={product._id}
-                key={product._id}
-                images={product.images}
-                name={product.name}
-                weight={product.weight}
-                brand={product.brand}
-              />
-            ))
-          )}
-        </div>
-      )}
+      <div>
+        {!products ? (
+          <Spinner className="m-auto" />
+        ) : (
+          <div className="productsWrap">
+            {products.length < 1 ? (
+              <p>No hay productos disponibles</p>
+            ) : (
+              products.map((product) => (
+                <Card
+                  id={product._id}
+                  key={product._id}
+                  images={product.images}
+                  name={product.name}
+                  weight={product.weight}
+                  brand={product.brand}
+                />
+              ))
+            )}
+          </div>
+        )}
+      </div>
       <div className="ropesShakeBanner">
         <div className="ropesShakeContent">
           <h2>Invicto Nutrition</h2>

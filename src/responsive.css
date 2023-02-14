@@ -1,10 +1,6 @@
-@media only screen and (max-width: 1138px) {
-  #contact .wrapper .pull-image {
-    display: none;
-  }
-
-  #contact .wrapper .contactFormContainer div ul {
-    padding-left: 0px;
+@media only screen and (max-width: 1400px) {
+  .cardWrap {
+    grid-template-columns: auto auto auto;
   }
 }
 
@@ -22,6 +18,25 @@
   }
   #signup form {
     width: 60%;
+  }
+  .cardWrap {
+    grid-template-columns: auto auto;
+  }
+}
+
+@media only screen and (max-width: 1138px) {
+  #contact .wrapper .pull-image {
+    display: none;
+  }
+
+  #contact .wrapper .contactFormContainer div ul {
+    padding-left: 0px;
+  }
+}
+
+@media only screen and (max-width: 1130px) {
+  .productsWrap {
+    grid-template-columns: auto auto auto;
   }
 }
 
@@ -103,13 +118,25 @@
   }
 }
 
-@media only screen and (max-width: 815px) {
+@media only screen and (max-width: 885px) {
   #shop .contentWrap {
     flex-direction: column;
   }
   #sidebar {
     display: none;
   }
+  .cardWrap {
+    padding: 10px 5px;
+  }
+}
+
+@media only screen and (max-width: 860px) {
+  .productsWrap {
+    grid-template-columns: auto auto;
+  }
+}
+
+@media only screen and (max-width: 815px) {
   .edit {
     width: 65%;
   }
@@ -215,6 +242,7 @@
   }
   .productsWrap {
     width: 100%;
+    justify-content: space-evenly;
   }
   .edit {
     width: 70%;
@@ -261,32 +289,21 @@
 }
 
 @media only screen and (max-width: 570px) {
-  .card {
-    width: 200px;
-    margin-bottom: 20px;
-  }
-  div.card {
-    height: 450px;
-    box-shadow: 1px 1px 1px #333;
-  }
-  .card .productName p {
-    font-size: 15px;
-  }
-  .card .priceAndCartHolder p {
-    font-size: 15px;
-  }
-  .card .priceAndCartHolder div {
-    left: 66px;
-  }
   .edit {
     width: 80%;
   }
 }
 
-@media only screen and (max-width: 519px) {
-  .productsWrap {
-    gap: 8px;
+@media only screen and (max-width: 557px) {
+  .card {
+    width: 200px;
   }
+  .cardWrap {
+    margin-top: 0px;
+  }
+}
+
+@media only screen and (max-width: 519px) {
   .welcome {
     right: 5%;
   }
@@ -296,12 +313,8 @@
   .cardWrap {
     gap: 10px;
     padding: 0px;
+    padding-bottom: 20px;
   }
-  .card {
-    width: 200px;
-    height: fit-content;
-  }
-
   .paymentMethods {
     width: 95%;
   }
@@ -321,8 +334,16 @@
   .product-details-box {
     width: 95%;
   }
+  .productsWrap {
+    gap: 6px;
+    row-gap: 25px;
+  }
   .card {
-    width: 190px;
+    width: 160px;
+  }
+  .card .info p {
+    font-size: 12px;
+    margin-bottom: 5px;
   }
 }
 
@@ -331,7 +352,6 @@
     right: 0%;
   }
   .productsWrap {
-    gap: 5px;
     padding: 10px;
   }
 }
@@ -363,22 +383,8 @@
     width: 11px;
     padding: 15px;
   }
-  .card {
-    width: 175px;
-    height: fit-content;
-  }
-  .card .productName {
-    font-size: 15px;
-  }
-  .amount {
-    font-size: 12px;
-  }
   #price {
     font-size: 15px;
-  }
-  div.card {
-    height: 375px;
-    padding: 8px 4px 0px 4px;
   }
   .navbar-search div.wrap {
     font-family: Regular;
@@ -399,22 +405,29 @@
 }
 
 @media only screen and (max-width: 376px) {
-  .productsWrap {
-    gap: 7px;
-  }
   .welcome {
     width: 345px;
   }
   #contact .wrapper .contactForm {
     width: 290px;
   }
-  .card {
-    width: 165px;
+}
+
+@media only screen and (max-width: 360px) {
+  .welcome {
+    width: 310px;
+    right: 6%;
+  }
+  .welcome-button button {
+    width: 75%;
   }
 }
 
-@media only screen and (max-width: 353px) {
+@media only screen and (max-width: 330px) {
+  .productsWrap {
+    grid-template-columns: auto;
+  }
   .card {
-    width: 155px;
+    width: 220px;
   }
 }

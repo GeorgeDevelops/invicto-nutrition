@@ -39,6 +39,9 @@ const ProductDetails = (props) => {
       quantity: null,
     };
     store.dispatch(add(object));
+    toast.success("Articulo agregado al carrito.", {
+      position: toast.POSITION.TOP_CENTER,
+    });
     return;
   }
 
