@@ -70,7 +70,7 @@ function SignupForm() {
       toast.success(response.data, { position: toast.POSITION.TOP_CENTER });
       localStorage.setItem("token", response.headers["x-auth-token"]);
 
-      let coupon = `INVICTO00${Math.ceil(Math.random() * 999)}`;
+      let coupon = `INVICTO2023`;
 
       let reply = {
         name: firstName,

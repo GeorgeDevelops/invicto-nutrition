@@ -2,6 +2,7 @@ import React from "react";
 import visa from "./../images/visa.png";
 import mastercard from "./../images/mastercard-logo.png";
 import paypal from "./../images/paypal.png";
+import mio from "./../images/Mio-logo.png";
 
 const Footer = (props) => {
   const privacy_policy_url =
@@ -110,6 +111,9 @@ const Footer = (props) => {
             </li>
             <li>
               <img src={paypal} alt="Paypal" />
+            </li>
+            <li>
+              <img src={mio} width={"80px"} alt="Mio" />
             </li>
           </ul>
         </div>

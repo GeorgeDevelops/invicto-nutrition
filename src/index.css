@@ -1288,3 +1288,28 @@ cart-button .pd-price {
 .bold {
   font-weight: bold;
 }
+
+#submit {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  font-size: 20px;
+  font-family: Regular;
+  border-style: none;
+  border-radius: 8px;
+  background-color: #1f618d;
+  color: #fff;
+  margin-top: 20px;
+}
+
+#payment-message {
+  padding: 8px;
+  width: 100%;
+  background-color: #982316;
+  color: #fff;
+  text-align: center;
+  font-family: Regular;
+  font-size: 18px;
+  border-radius: 5px;
+  margin-top: 5px;
+}

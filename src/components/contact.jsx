@@ -20,7 +20,11 @@ const Contact = (props) => {
               </a>
             </li>
             <li>
-              <a href="https://www.whatsapp.com/" style={{ color: "#128c7e" }}>
+              <a
+                href="https://wa.me/message/ZZV2MCM5YCFNP1"
+                target="_blank"
+                style={{ color: "#128c7e" }}
+              >
                 <FontAwesomeIcon icon="fa-brands fa-whatsapp" />
               </a>
             </li>

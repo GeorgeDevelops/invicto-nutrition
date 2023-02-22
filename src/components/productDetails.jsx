@@ -21,6 +21,7 @@ const ProductDetails = (props) => {
     let response = await http.get(`${URL}/api/products/${productId}`);
 
     setMerchant(response.data);
+    setWeights(response.data.weight);
     return;
   }
 
@@ -45,28 +46,6 @@ const ProductDetails = (props) => {
     return;
   }
 
-  function getStock() {
-    if (!merchant) return;
-
-    let ready = [];
-    return new Promise((resolve, reject) => {
-      merchant.weight.forEach((w, idx) => {
-        if (w.quantity > 0) ready.push(w);
-        let index = idx + 1;
-        if (index === merchant.weight.length) resolve(ready);
-      });
-    });
-  }
-
-  async function executeGetStock() {
-    let stock = await getStock().catch((err) =>
-      toast.error(err, { position: toast.POSITION.TOP_CENTER })
-    );
-
-    setWeights(stock);
-    return;
-  }
-
   function handleCheckboxChange(e) {
     setIndex(e.currentTarget.value);
   }
@@ -84,10 +63,6 @@ const ProductDetails = (props) => {
   useEffect(() => {
     getMerchant(productId);
   }, []);
-
-  useEffect(() => {
-    executeGetStock();
-  }, [merchant]);
 
   return (
     <React.Fragment>
@@ -134,7 +109,9 @@ const ProductDetails = (props) => {
                           name="weight"
                           id={idx}
                           value={idx}
+                          checked={Number(index) === Number(idx) && true}
                           onChange={(e) => handleCheckboxChange(e)}
+                          disabled={m.quantity < 1 && true}
                         />
                         &nbsp;
                         <label htmlFor={idx}>

@@ -20,6 +20,8 @@ function Cards({ id, images, weight, name, brand }) {
   }
 
   function addToCart(e) {
+    // if (e.target.name === "button")
+    console.log("Name is ", e.target.name);
     if (available < 1)
       return toast.error("Producto no disponible (Out of stock)", {
         position: toast.POSITION.TOP_CENTER,

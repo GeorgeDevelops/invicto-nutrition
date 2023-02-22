@@ -78,8 +78,13 @@ const Success = (props) => {
               <p>
                 El tiempo estimado para la entrega de su pedido es de 24 a 48
                 horas, nuestro delivery se estara comunicando con usted durante
-                dicho periodo de tiempo con el fin de gestionar el lugar de
-                entrega.
+                dicho periodo de tiempo con el fin de gestionar la entrega.
+              </p>
+              <br />
+              <p>
+                Si ha realizado este pedido con la opcion "Ordenar ahora, Pagar
+                mas tarde" nos contactaremos con usted mediante las siguientes
+                24 horas con el fin de concretizar el pago de su pedido.
               </p>
             </div>
             <div className="button">

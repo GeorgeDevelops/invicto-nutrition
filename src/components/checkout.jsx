@@ -13,7 +13,15 @@ import Button from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
+import mio from "./../images/Mio-logo.png";
+import { v4 } from "uuid";
+// import { loadStripe } from "@stripe/stripe-js";
+// import { Elements } from "@stripe/react-stripe-js";
+// import CheckoutForm from "./checkoutForm";
 
+// const stripePromise = loadStripe(
+//   "pk_test_51MBTikFgUifPBWavCWOyEaBFwHguoy9EWCdFdjDgEV2EWwI3pxoOzUZee8hBMzl6AMaQWMj6I6N2GAwgtZLaXZu900VAsV1BbR"
+// );
 const Checkout = (props) => {
   const [merchants, setMerchants] = useState([]);
   const [user, setUser] = useState(null);
@@ -24,39 +32,42 @@ const Checkout = (props) => {
   const [promo, setPromo] = useState(null);
   const API = process.env.REACT_APP_API_URL;
   const navigate = useNavigate();
+  // const [clientSecret, setClientSecret] = useState("");
 
-  async function handleNewOrder(data, payment_details) {
-    let url = `${API}/api/orders/new`;
-    let emailUrl = `${API}/api/thank-you-for-your-purchase`;
-    let cart = [];
-    setSpinner(true);
-    let user = store.getState().userSlice.value;
+  function calculateData(data) {
+    return new Promise((resolve, reject) => {
+      let cart = [];
 
-    function calculateData() {
-      return new Promise((resolve, reject) => {
-        data.forEach((merchant) => {
-          let m = _.pick(merchant, ["_id", "quantity", "index", "weight"]);
-          cart.push(m);
-          if (cart.length === data.length) return resolve(cart);
-        });
+      data.forEach((merchant) => {
+        let m = _.pick(merchant, ["_id", "quantity", "index", "weight"]);
+        cart.push(m);
+        if (cart.length === data.length) return resolve(cart);
       });
-    }
+    });
+  }
 
-    let result = await calculateData();
+  async function sendEmail(purchase_details) {
+    await http.post(`${API}/api/thank-you-for-your-purchase`, purchase_details);
+  }
 
-    let token = localStorage.getItem("token");
-    let decoded = jwtDecode(token);
+  async function handleNewOrder(data, payment_details, paid) {
+    setSpinner(true);
+
+    let result = await calculateData(data);
 
     let details = {
-      customerId: decoded._id,
+      customerId: user._id,
       content: result,
+      paid,
       payment_details,
+      promotionId: !promo ? null : promo._id,
     };
 
-    let response = await http.post(url, details);
+    let response = await http.post(`${API}/api/orders/new`, details);
 
-    if (response.status && response.status === 200) {
+    if (response && response.status && response.status === 200) {
       setSpinner(true);
+
       toast.success(response.data.message, {
         position: toast.POSITION.TOP_CENTER,
       });
@@ -69,7 +80,7 @@ const Checkout = (props) => {
         name: user.first_name,
       };
 
-      await http.post(emailUrl, purchase_details);
+      sendEmail(purchase_details);
 
       store.dispatch(emptyCart());
 
@@ -78,36 +89,25 @@ const Checkout = (props) => {
   }
 
   async function createOrder(data) {
-    return new Promise(async (resolve, reject) => {
-      let url = `${API}/api/paypal/create-order`;
-      let cart = [];
+    let url = `${API}/api/paypal/create-order`;
 
-      function calculateData() {
-        return new Promise((resolve, reject) => {
-          data.forEach((merchant) => {
-            let m = _.pick(merchant, ["_id", "quantity", "index"]);
-            cart.push(m);
-            if (cart.length === data.length) return resolve(cart);
-          });
-        });
-      }
+    let result = await calculateData(data);
 
-      let result = await calculateData();
+    let AUTH_TOKEN = localStorage.getItem("token");
 
-      let token = localStorage.getItem("token");
+    let details = {
+      content: result,
+    };
 
-      let details = {
-        content: result,
-      };
-
-      let response = await http.post(url, details, {
-        headers: { "x-auth-token": token },
-      });
-      if (response.status && response.status === 200) resolve(response.data.id);
+    let response = await http.post(url, details, {
+      headers: { "x-auth-token": AUTH_TOKEN },
     });
+
+    if (response.status && response.status === 200) return response.data.id;
   }
 
   async function capturePayment(orderId) {
+    setSpinner(true);
     let url = `${API}/api/paypal/capture-payment`;
     let token = localStorage.getItem("token");
 
@@ -117,12 +117,13 @@ const Checkout = (props) => {
       headers: { "x-auth-token": token },
     });
 
-    if (
-      response.status &&
-      response.status === 200 &&
-      response.data.status === "COMPLETED"
-    ) {
+    if (response.status && response.data.status !== "COMPLETED") {
+      return toast.error("Entidad no pudo ser procesada.");
+    } else {
+      response.data.source = "Paypal";
+
       handleNewOrder(merchants, response.data);
+      return;
     }
   }
 
@@ -147,9 +148,12 @@ const Checkout = (props) => {
   }
 
   async function handlePromotionApplication() {
-    setApplying(true);
+    if (promo)
+      return toast.info("No puedes aplicar mas de una promocion.", {
+        position: toast.POSITION.TOP_CENTER,
+      });
 
-    let URL = `${API}/api/promotions/${promoCode}`;
+    setApplying(true);
 
     let AUTH_TOKEN = localStorage.getItem("token");
 
@@ -159,6 +163,18 @@ const Checkout = (props) => {
       return;
     }
 
+    let decoded = jwtDecode(AUTH_TOKEN);
+
+    if (!decoded._id || decoded._id === "") {
+      toast.info("Intentelo nuevamente.");
+      setApplying(null);
+      return;
+    }
+
+    let customerId = decoded._id;
+
+    let URL = `${API}/api/promotions/${promoCode}/${customerId}`;
+
     let headers = { headers: { "x-auth-token": AUTH_TOKEN } };
 
     let response = await http.get(URL, headers);
@@ -166,7 +182,7 @@ const Checkout = (props) => {
     if (response.status && response.status === 200) {
       setApplying(null);
 
-      setPromo(response.data.promotion);
+      setPromo(response.data.promotion[0]);
 
       toast.success(response.data.message, {
         position: toast.POSITION.TOP_CENTER,
@@ -178,6 +194,24 @@ const Checkout = (props) => {
 
     setPromoCode("");
     setApplying(null);
+    return;
+  }
+
+  function orderNowPayLater() {
+    let sure = window.confirm("Deseas ordenar ahora y pagar mas tarde?");
+
+    if (!sure) return;
+
+    let payment_id = v4();
+
+    let details = {
+      id: payment_id,
+      status: "PENDING",
+      source: "Mio",
+    };
+
+    handleNewOrder(merchants, details, false);
+
     return;
   }
 
@@ -196,6 +230,30 @@ const Checkout = (props) => {
     setMerchants(store.getState().cartReducer.value);
     setSubtotal(store.getState().cartReducer.subtotal);
   }, []);
+
+  // async function createPaymentIntent() {
+  //   let url = `${API}/api/create-payment-intent`;
+  //   fetch(url, {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({ items: merchants }),
+  //   })
+  //     .then((res) => res.json())
+  //     .then((data) => setClientSecret(data.clientSecret));
+  // }
+
+  // useEffect(() => {
+  //   if (merchants.length < 1) return;
+  //   createPaymentIntent();
+  // }, [merchants]);
+
+  // const appearance = {
+  //   theme: "night",
+  // };
+  // const options = {
+  //   clientSecret,
+  //   appearance,
+  // };
 
   return (
     <React.Fragment>
@@ -224,9 +282,20 @@ const Checkout = (props) => {
               </ul>
             </div>
             <div className="subtotal">
-              <p>Envio RD$ 300</p>
               <p>Subtotal RD$ {subtotal}</p>
-              <p>Total a pagar RD$ {subtotal + 300}</p>
+              <p>Envio RD$ 250</p>
+              {promo && (
+                <p>
+                  Promocion aplicada {`(${promo.name})`} -$
+                  {(promo.discount / 100) * subtotal}
+                </p>
+              )}
+              <p>
+                Total a pagar RD${" "}
+                {!promo
+                  ? subtotal + 250
+                  : subtotal - (promo.discount / 100) * subtotal + 250}
+              </p>
             </div>
           </div>
           <div className="paymentMethods">
@@ -288,12 +357,15 @@ const Checkout = (props) => {
             </div>
             <div>
               {spinner ? <Spinner /> : null}
-              {/* <button
-                onClick={() => handleOrderCreation(merchants)}
-                className="placeOrderButton"
-              >
-                Realizar pedido&nbsp;{spinner ? <Spinner /> : null}
-              </button> */}
+              {/* {clientSecret && (
+                <Elements options={options} stripe={stripePromise}>
+                  <CheckoutForm />
+                </Elements>
+              )} */}
+              <button id="submit" onClick={orderNowPayLater}>
+                Ordenar ahora, Pagar mas tarde&nbsp;|&nbsp;
+                <img src={mio} width={"40px"} alt="Mio" />
+              </button>
             </div>
           </div>
         </div>

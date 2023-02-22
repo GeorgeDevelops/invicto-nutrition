@@ -17,33 +17,36 @@ const Card = ({ id, images, weight, name, brand }) => {
     });
   }
 
-  function addToCart(e) {
-    if (available < 1)
-      return toast.error("Producto no disponible (Out of stock)", {
+  function addToCart(e, name) {
+    if (name === "button") {
+      if (available < 1)
+        return toast.error("Producto no disponible (Out of stock)", {
+          position: toast.POSITION.TOP_CENTER,
+        });
+
+      const _id = e.currentTarget.id;
+      let object = {
+        index: 0,
+        _id,
+        images,
+        name,
+        weight: weight[0],
+        brand,
+        quantity: null,
+      };
+
+      store.dispatch(add(object));
+      toast.success("Articulo agregado al carrito.", {
         position: toast.POSITION.TOP_CENTER,
       });
 
-    const _id = e.currentTarget.id;
-    let object = {
-      index: 0,
-      _id,
-      images,
-      name,
-      weight: weight[0],
-      brand,
-      quantity: null,
-    };
+      return "added";
+    }
 
-    store.dispatch(add(object));
-    toast.success("Articulo agregado al carrito.", {
-      position: toast.POSITION.TOP_CENTER,
-    });
-    return;
-  }
-
-  function goToProductDetail(e) {
-    navigateTo(`/productos/${e.currentTarget.id}/detalles`);
-    return;
+    if (name === "detail") {
+      navigateTo(`/productos/${e.currentTarget.id}/detalles`);
+      return;
+    }
   }
 
   useEffect(() => {
@@ -52,10 +55,11 @@ const Card = ({ id, images, weight, name, brand }) => {
 
   return (
     <div
+      name="detail"
       className="card"
       id={id}
-      name="detail"
-      onClick={(e) => goToProductDetail(e)}
+      // onClick={(e) => goToProductDetail(e)}
+      onClick={(e) => addToCart(e, "detail")}
     >
       {available < 1 ? (
         <div className="OutOfStockLabel">
@@ -78,7 +82,7 @@ const Card = ({ id, images, weight, name, brand }) => {
       <button
         className="cart-button"
         id={id}
-        onClick={(e) => addToCart(e)}
+        onClick={(e) => addToCart(e, "button")}
         name={"button"}
       >
         <FontAwesomeIcon icon="fa-solid fa-cart-shopping" name={"cart"} />
